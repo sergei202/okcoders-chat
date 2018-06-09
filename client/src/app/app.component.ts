@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
 	selector: 'app-root',
@@ -6,7 +7,32 @@ import { Component } from '@angular/core';
 	styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-	messages = [
-		{date:new Date(), text:'Hi!', from:'Sergei'}
-	];
+	inputText = '';
+	inputName = '';
+	messages:any = [];
+
+	constructor(private http:HttpClient) {
+		this.getMessages();
+		setInterval(() => this.getMessages(), 500);
+	}
+
+	getMessages() {
+		this.http.get('/api/messages').toPromise().then(messages => {
+			console.log('getMessages messages=%o', messages);
+			this.messages = messages;
+		});
+	}
+
+	sendInput() {
+		if(!this.inputText) return;
+		console.log('sendInput: %o', this.inputText);
+		var msg = {
+			text: this.inputText,
+			from: this.inputName
+		};
+		this.http.post('/api/message', msg).toPromise().then(messages => {
+			this.messages = messages;
+		});
+		this.inputText = '';
+	}
 }
